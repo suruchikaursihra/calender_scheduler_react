@@ -1,23 +1,37 @@
-import logo from './logo.svg';
+import { Card, CardContent, Grid, makeStyles } from '@material-ui/core';
 import './App.css';
+import Calender from './components/Calender'
+
+const useStyles = makeStyles({
+  root: {
+    paddingRight:'60px',
+    paddingLeft:'60px'
+  },
+  bullet: {
+    display: 'inline-block',
+    margin: '0 2px',
+    transform: 'scale(0.8)',
+  },
+  title: {
+    fontSize: 14,
+  },
+  pos: {
+    marginBottom: 12,
+  },
+});
 
 function App() {
+  const classes = useStyles();
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <Grid item xs={12} height="75%"  alignItems="center"   justify="center">
+        <Card className={classes.root} variant="outlined">
+          <CardContent>
+            <Calender />
+          </CardContent>
+        </Card>
+      </Grid>
     </div>
   );
 }
