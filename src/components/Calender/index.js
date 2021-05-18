@@ -12,13 +12,20 @@ import {
     ConfirmationDialog,
 } from '@devexpress/dx-react-scheduler-material-ui';
 import { appointments } from '../../shared/appointments';
-import { Grid } from '@material-ui/core';
+// import { Grid } from '@material-ui/core';
 
+const randomArr = [];
+
+for (let i =0 ; i< 3000; i++){
+    const appointment = appointments[Math.floor(Math.random()*10*i%20)];
+    randomArr.push(appointment);
+}
+ console.log(randomArr.length);
 export default class index extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state = {
-            data: appointments,
+            data: randomArr,
             currentDate: '2018-06-27',
             addedAppointment: {},
             appointmentChanges: {},
