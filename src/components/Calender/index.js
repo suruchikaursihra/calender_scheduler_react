@@ -1,107 +1,117 @@
 import * as React from 'react';
 import Paper from '@material-ui/core/Paper';
-import { ViewState, EditingState } from '@devexpress/dx-react-scheduler';
+import { makeStyles } from '@material-ui/core/styles';
+import { ViewState, EditingState, IntegratedEditing } from '@devexpress/dx-react-scheduler';
 import {
     Scheduler,
+    WeekView,
     Appointments,
     AppointmentForm,
     AppointmentTooltip,
-    WeekView,
-    EditRecurrenceMenu,
-    AllDayPanel,
-    ConfirmationDialog,
+    DragDropProvider,
 } from '@devexpress/dx-react-scheduler-material-ui';
+
 import { appointments } from '../../shared/appointments';
-import { DragDropProvider } from '@devexpress/dx-react-scheduler-material-ui';
 
-export default class index extends React.PureComponent {
-    constructor(props) {
-        super(props);
-        this.state = {
-            data: appointments,
-            currentDate: '2018-06-27',
-            addedAppointment: {},
-            appointmentChanges: {},
-            editingAppointment: undefined,
-        };
-        this.commitChanges = this.commitChanges.bind(this);
-        this.changeAddedAppointment = this.changeAddedAppointment.bind(this);
-        this.changeAppointmentChanges = this.changeAppointmentChanges.bind(this);
-        this.changeEditingAppointment = this.changeEditingAppointment.bind(this);
-    }
+const currentDate = '2018-06-27';
+export default () => {
+    const [data, setData] = React.useState(appointments);
+    const [editingOptions, setEditingOptions] = React.useState({
+        allowAdding: true,
+        allowDeleting: true,
+        allowUpdating: true,
+        allowDragging: true,
+        allowResizing: true,
+    });
+    const [addedAppointment, setAddedAppointment] = React.useState({});
+    const [isAppointmentBeingCreated, setIsAppointmentBeingCreated] = React.useState(false);
 
-    changeAddedAppointment(addedAppointment) {
-        this.setState({ addedAppointment });
-    }
+    const {
+        allowAdding, allowDeleting, allowUpdating, allowResizing, allowDragging,
+    } = editingOptions;
 
-    changeAppointmentChanges(appointmentChanges) {
-        this.setState({ appointmentChanges });
-    }
+    const onCommitChanges = React.useCallback(({ added, changed, deleted }) => {
+        if (added) {
+            const startingAddedId = data.length > 0 ? data[data.length - 1].id + 1 : 0;
+            setData([...data, { id: startingAddedId, ...added }]);
+        }
+        if (changed) {
+            setData(data.map(appointment => (
+                changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment)));
+        }
+        if (deleted !== undefined) {
+            setData(data.filter(appointment => appointment.id !== deleted));
+        }
+        setIsAppointmentBeingCreated(false);
+    }, [setData, setIsAppointmentBeingCreated, data]);
+    const onAddedAppointmentChange = React.useCallback((appointment) => {
+        setAddedAppointment(appointment);
+        setIsAppointmentBeingCreated(true);
+    });
 
-    changeEditingAppointment(editingAppointment) {
-        this.setState({ editingAppointment });
-    }
+    const TimeTableCell = React.useCallback(React.memo(({ onDoubleClick, ...restProps }) => (
+        <WeekView.TimeTableCell
+            {...restProps}
+            onDoubleClick={allowAdding ? onDoubleClick : undefined}
+        />
+    )), [allowAdding]);
 
-    commitChanges({ added, changed, deleted }) {
-        this.setState((state) => {
-            let { data } = state;
-            if (added) {
-                const startingAddedId = data.length > 0 ? data[data.length - 1].id + 1 : 0;
-                data = [...data, { id: startingAddedId, ...added }];
-            }
-            if (changed) {
-                data = data.map(appointment => (
-                    changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment));
-            }
-            if (deleted !== undefined) {
-                data = data.filter(appointment => appointment.id !== deleted);
-            }
-            return { data };
-        });
-    }
+    const CommandButton = React.useCallback(({ id, ...restProps }) => {
+        if (id === 'deleteButton') {
+            return <AppointmentForm.CommandButton id={id} {...restProps} disabled={!allowDeleting} />;
+        }
+        return <AppointmentForm.CommandButton id={id} {...restProps} />;
+    }, [allowDeleting]);
 
-    render() {
-        const {
-            currentDate, data, addedAppointment, appointmentChanges, editingAppointment,
-        } = this.state;
+    const allowDrag = React.useCallback(
+        () => allowDragging && allowUpdating,
+        [allowDragging, allowUpdating],
+    );
+    const allowResize = React.useCallback(
+        () => allowResizing && allowUpdating,
+        [allowResizing, allowUpdating],
+    );
 
-        return (
+    return (
+        <React.Fragment>
             <Paper>
                 <Scheduler
                     data={data}
-                    height={550}
+                    height={600}
                 >
                     <ViewState
                         currentDate={currentDate}
                     />
                     <EditingState
-                        onCommitChanges={this.commitChanges}
+                        onCommitChanges={onCommitChanges}
 
                         addedAppointment={addedAppointment}
-                        onAddedAppointmentChange={this.changeAddedAppointment}
-
-                        appointmentChanges={appointmentChanges}
-                        onAppointmentChangesChange={this.changeAppointmentChanges}
-
-                        editingAppointment={editingAppointment}
-                        onEditingAppointmentChange={this.changeEditingAppointment}
+                        onAddedAppointmentChange={onAddedAppointmentChange}
                     />
+
+                    <IntegratedEditing />
                     <WeekView
                         startDayHour={9}
-                        endDayHour={17}
+                        endDayHour={19}
+                        timeTableCellComponent={TimeTableCell}
                     />
-                    <AllDayPanel />
-                    <EditRecurrenceMenu />
-                    <ConfirmationDialog />
+
                     <Appointments />
-                    <DragDropProvider />
+
                     <AppointmentTooltip
                         showOpenButton
-                        showDeleteButton
+                        showDeleteButton={allowDeleting}
                     />
-                    <AppointmentForm />
+                    <AppointmentForm
+                        commandButtonComponent={CommandButton}
+                        readOnly={isAppointmentBeingCreated ? false : !allowUpdating}
+                    />
+                    <DragDropProvider
+                        allowDrag={allowDrag}
+                        allowResize={allowResize}
+                    />
                 </Scheduler>
             </Paper>
-        );
-    }
-}
+        </React.Fragment>
+    );
+};
