@@ -1,11 +1,12 @@
-import { Card, CardContent, Grid, makeStyles } from '@material-ui/core';
+import { Card, CardContent, Container, Grid, makeStyles } from '@material-ui/core';
 import './App.css';
 import Calender from './components/Calender'
 
 const useStyles = makeStyles({
   root: {
-    paddingRight:'60px',
-    paddingLeft:'60px'
+    paddingTop:'30px',
+    paddingRight: '60px',
+    paddingLeft: '60px'
   },
   bullet: {
     display: 'inline-block',
@@ -25,13 +26,15 @@ function App() {
 
   return (
     <div>
-      <Grid item xs={12} height="75%"  alignItems="center"   justify="center">
-        <Card className={classes.root} variant="outlined">
-          <CardContent>
-            <Calender />
-          </CardContent>
-        </Card>
-      </Grid>
+      <Container maxWidth="lg">
+        <Grid >
+          <Card className={classes.root} variant="outlined">
+            <CardContent>
+              <Calender />
+            </CardContent>
+          </Card>
+        </Grid>
+      </Container>
     </div>
   );
 }

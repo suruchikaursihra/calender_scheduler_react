@@ -12,7 +12,7 @@ import {
     ConfirmationDialog,
 } from '@devexpress/dx-react-scheduler-material-ui';
 import { appointments } from '../../shared/appointments';
-import { Grid } from '@material-ui/core';
+import { DragDropProvider } from '@devexpress/dx-react-scheduler-material-ui';
 
 export default class index extends React.PureComponent {
     constructor(props) {
@@ -69,7 +69,7 @@ export default class index extends React.PureComponent {
             <Paper>
                 <Scheduler
                     data={data}
-                    height={600}
+                    height={550}
                 >
                     <ViewState
                         currentDate={currentDate}
@@ -94,6 +94,7 @@ export default class index extends React.PureComponent {
                     <EditRecurrenceMenu />
                     <ConfirmationDialog />
                     <Appointments />
+                    <DragDropProvider />
                     <AppointmentTooltip
                         showOpenButton
                         showDeleteButton
