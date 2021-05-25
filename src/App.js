@@ -1,10 +1,12 @@
+import 'devextreme/dist/css/dx.common.css';
+import 'devextreme/dist/css/dx.light.css';
 import { Card, CardContent, Container, Grid, makeStyles } from '@material-ui/core';
 import './App.css';
 import Calender from './components/Calender'
 
 const useStyles = makeStyles({
   root: {
-    paddingTop:'30px',
+    paddingTop: '30px',
     paddingRight: '60px',
     paddingLeft: '60px'
   },

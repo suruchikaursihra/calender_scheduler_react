@@ -1,117 +1,75 @@
-import * as React from 'react';
-import Paper from '@material-ui/core/Paper';
-import { makeStyles } from '@material-ui/core/styles';
-import { ViewState, EditingState, IntegratedEditing } from '@devexpress/dx-react-scheduler';
-import {
-    Scheduler,
-    WeekView,
-    Appointments,
-    AppointmentForm,
-    AppointmentTooltip,
-    DragDropProvider,
-} from '@devexpress/dx-react-scheduler-material-ui';
 
-import { appointments } from '../../shared/appointments';
+import React from 'react';
+import Scheduler, { AppointmentDragging } from 'devextreme-react/scheduler';
+import ListViewAppointments from '../ListViewAppointments';
+import { data } from '../../shared/data';
+import ScrollView from 'devextreme-react/scroll-view';
+import Draggable from 'devextreme-react/draggable';
 
-const currentDate = '2018-06-27';
-export default () => {
-    const [data, setData] = React.useState(appointments);
-    const [editingOptions, setEditingOptions] = React.useState({
-        allowAdding: true,
-        allowDeleting: true,
-        allowUpdating: true,
-        allowDragging: true,
-        allowResizing: true,
-    });
-    const [addedAppointment, setAddedAppointment] = React.useState({});
-    const [isAppointmentBeingCreated, setIsAppointmentBeingCreated] = React.useState(false);
+const currentDate = new Date(2021, 4, 27);
+const views = ['day', 'week', 'workWeek', 'month'];
+const draggingGroupName = 'appointmentsGroup';
 
-    const {
-        allowAdding, allowDeleting, allowUpdating, allowResizing, allowDragging,
-    } = editingOptions;
+class Calender extends React.Component {
 
-    const onCommitChanges = React.useCallback(({ added, changed, deleted }) => {
-        if (added) {
-            const startingAddedId = data.length > 0 ? data[data.length - 1].id + 1 : 0;
-            setData([...data, { id: startingAddedId, ...added }]);
+    constructor(props) {
+        super(props);
+        this.state = {
+            data: data
+        };
+    }
+
+    onListDragStart(e) {
+        e.cancel = true;
+    }
+
+    onItemDragStart(e) {
+        e.itemData = e.fromData;
+    }
+
+    onItemDragEnd(e) {
+        if (e.toData) {
+            e.cancel = true;
         }
-        if (changed) {
-            setData(data.map(appointment => (
-                changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment)));
-        }
-        if (deleted !== undefined) {
-            setData(data.filter(appointment => appointment.id !== deleted));
-        }
-        setIsAppointmentBeingCreated(false);
-    }, [setData, setIsAppointmentBeingCreated, data]);
-    const onAddedAppointmentChange = React.useCallback((appointment) => {
-        setAddedAppointment(appointment);
-        setIsAppointmentBeingCreated(true);
-    });
+    }
 
-    const TimeTableCell = React.useCallback(React.memo(({ onDoubleClick, ...restProps }) => (
-        <WeekView.TimeTableCell
-            {...restProps}
-            onDoubleClick={allowAdding ? onDoubleClick : undefined}
-        />
-    )), [allowAdding]);
+    render() {
 
-    const CommandButton = React.useCallback(({ id, ...restProps }) => {
-        if (id === 'deleteButton') {
-            return <AppointmentForm.CommandButton id={id} {...restProps} disabled={!allowDeleting} />;
-        }
-        return <AppointmentForm.CommandButton id={id} {...restProps} />;
-    }, [allowDeleting]);
+        return (
+            <div>
+                { data.length <= 50 ?
+                    <React.Fragment>
+                        <ScrollView id="scroll">
+                            <Draggable
+                                id="list"
+                                data="dropArea"
+                                group={draggingGroupName}
+                                onDragStart={this.onListDragStart}>
+                            </Draggable>
+                        </ScrollView>
+                        <Scheduler
+                            timeZone="Asia/Kolkata"
+                            dataSource={data}
+                            views={views}
+                            defaultCurrentView="day"
+                            defaultCurrentDate={currentDate}
+                            height={600}
+                            startDayHour={9}
+                            editing={true}>
+                            <AppointmentDragging
+                                group={draggingGroupName}
+                                onRemove={this.onAppointmentRemove}
+                                onAdd={this.onAppointmentAdd}
+                            />
+                        </Scheduler>
+                    </React.Fragment>
+                    :
+                    <ListViewAppointments />
+                }
+            </div>
 
-    const allowDrag = React.useCallback(
-        () => allowDragging && allowUpdating,
-        [allowDragging, allowUpdating],
-    );
-    const allowResize = React.useCallback(
-        () => allowResizing && allowUpdating,
-        [allowResizing, allowUpdating],
-    );
+        );
+    }
+}
 
-    return (
-        <React.Fragment>
-            <Paper>
-                <Scheduler
-                    data={data}
-                    height={600}
-                >
-                    <ViewState
-                        currentDate={currentDate}
-                    />
-                    <EditingState
-                        onCommitChanges={onCommitChanges}
-
-                        addedAppointment={addedAppointment}
-                        onAddedAppointmentChange={onAddedAppointmentChange}
-                    />
-
-                    <IntegratedEditing />
-                    <WeekView
-                        startDayHour={9}
-                        endDayHour={19}
-                        timeTableCellComponent={TimeTableCell}
-                    />
-
-                    <Appointments />
-
-                    <AppointmentTooltip
-                        showOpenButton
-                        showDeleteButton={allowDeleting}
-                    />
-                    <AppointmentForm
-                        commandButtonComponent={CommandButton}
-                        readOnly={isAppointmentBeingCreated ? false : !allowUpdating}
-                    />
-                    <DragDropProvider
-                        allowDrag={allowDrag}
-                        allowResize={allowResize}
-                    />
-                </Scheduler>
-            </Paper>
-        </React.Fragment>
-    );
-};
+export default Calender;
