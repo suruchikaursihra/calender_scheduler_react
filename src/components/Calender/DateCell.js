@@ -1,5 +1,5 @@
 import React from 'react';
-import Utils from './util';
+import Utils from './utils';
 
 export default function DateCell(props) {
   const { date, text } = props.itemData;

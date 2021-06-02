@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "cldrjs": "0.4.4",
     "@devexpress/dx-react-core": "^2.7.5",
     "@devexpress/dx-react-scheduler": "^2.7.5",
     "@devexpress/dx-react-scheduler-material-ui": "^2.7.5",
